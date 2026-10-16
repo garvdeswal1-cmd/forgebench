@@ -1,0 +1,30 @@
+services:
+  forgebench:
+    build: .
+    image: forgebench:local
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      FORGEBENCH_DB: /data/forgebench.sqlite3
+      FORGEBENCH_RUNS_DIR: /data/runs
+      FORGEBENCH_REPORTS_DIR: /data/reports
+      # Set this to an Ollama API reachable from this container when using a real model.
+      FORGEBENCH_OLLAMA_URL: ${FORGEBENCH_OLLAMA_URL:-http://host.docker.internal:11434}
+    ports:
+      # Private by default: use an SSH tunnel or an authenticated reverse proxy.
+      - "127.0.0.1:8501:8501"
+    volumes:
+      - forgebench_data:/data
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+
+volumes:
+  forgebench_data:
